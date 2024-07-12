@@ -1,4 +1,4 @@
-# Log Analysis Of Vigitoon
+# Log Analysis Of digitoon.tv
 
 ## Overview
 
@@ -67,7 +67,7 @@ This tool processes and analyzes Nginx log files. It parses log entries, cleans 
 
 4. **Run the Script:**
     ```bash
-    python Vigitoon.py
+    python Digitoon.py
     ```
 
 ## Visualizations
