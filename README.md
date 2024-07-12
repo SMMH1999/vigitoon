@@ -67,7 +67,7 @@ This tool processes and analyzes Nginx log files. It parses log entries, cleans 
 
 4. **Run the Script:**
     ```bash
-    python log_analysis.py
+    python Vigitoon.py
     ```
 
 ## Visualizations

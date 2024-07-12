@@ -4,7 +4,6 @@ import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
-from sklearn.cluster import KMeans
 from MySQL import query_executor
 
 def parse_log(log_line):
