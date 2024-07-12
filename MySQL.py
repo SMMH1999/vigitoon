@@ -13,6 +13,7 @@ def query_executor(dbName, sql_command, *args):
     """This function runs SQL commands and returns the results as a list of dictionaries.
 
     Args:
+        dbName (str): The name of the database you want to connect to. "None" if there is no database.
         sql_command (str): The SQL command to execute.
         *args: Arguments to be passed to the SQL command.
 

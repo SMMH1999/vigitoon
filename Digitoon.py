@@ -31,21 +31,21 @@ def read_and_parse_logs():
             else:
                 print(f"Failed to parse line: {line}")
 
-    df = pd.DataFrame(log_entries)
-    df['query_params'] = df['url'].apply(lambda x: dict(param.split('=') for param in x.split('?')[1].split('&')) if '?' in x else {})
-    df.to_csv('parsed_log_step_1.csv', index=False)
-    return df
+    data = pd.DataFrame(log_entries)
+    data['query_params'] = data['url'].apply(lambda x: dict(param.split('=') for param in x.split('?')[1].split('&')) if '?' in x else {})
+    data.to_csv('parsed_log_step_1.csv', index=False)
+    return data
 
-def clean_data(df):
+def clean_data(data):
     """
     Cleans the parsed log DataFrame.
     """
-    df['query_params'] = df['query_params'].apply(json.dumps)
-    df.drop_duplicates(subset=['ip', 'timestamp', 'method', 'url', 'status', 'size', 'query_params'], inplace=True)
-    df.replace(to_replace=r'(NULL|-)+', value=None, regex=True, inplace=True)
-    df.dropna(axis=0, how='any', inplace=True)
-    df.to_csv('parsed_log_step_2.csv', index=False)
-    return df
+    data['query_params'] = data['query_params'].apply(json.dumps)
+    data.drop_duplicates(subset=['ip', 'timestamp', 'method', 'url', 'status', 'size', 'query_params'], inplace=True)
+    data.replace(to_replace=r'(NULL|-)+', value=None, regex=True, inplace=True)
+    data.dropna(axis=0, how='any', inplace=True)
+    data.to_csv('parsed_log_step_2.csv', index=False)
+    return data
 
 def setup_database():
     """
@@ -68,11 +68,11 @@ def setup_database():
         """
     )
 
-def save_data_to_db(df):
+def save_data_to_db(data):
     """
     Saves the cleaned log data into the MySQL database.
     """
-    for index, row in df.iterrows():
+    for index, row in data.iterrows():
         try:
             ip = row['ip']
             timestamp = datetime.strptime(row['timestamp'], '%d/%b/%Y:%H:%M:%S %z')
@@ -93,25 +93,25 @@ def save_data_to_db(df):
         except Exception as e:
             print(f"Error saving row {index} to database: {e}")
 
-def visualize_requests_per_ip(df):
+def visualize_requests_per_ip(data):
     """
     Visualizes the number of requests per IP address.
     """
-    ip_counts = df['ip'].value_counts()
+    ip_counts = data['ip'].value_counts()
     plt.figure(figsize=(10, 6))
     ip_counts.plot(kind='bar')
-    plt.title(f'Number of Requests per IP Address (Total IPs: {df["ip"].nunique()})')
+    plt.title(f'Number of Requests per IP Address (Total IPs: {data["ip"].nunique()})')
     plt.xlabel('IP Address')
     plt.ylabel('Number of Requests')
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
     plt.show()
 
-def visualize_unique_urls_per_ip(df):
+def visualize_unique_urls_per_ip(data):
     """
     Visualizes the number of unique URLs requested per IP address.
     """
-    ip_url_counts = df.groupby('ip')['url'].nunique()
+    ip_url_counts = data.groupby('ip')['url'].nunique()
     plt.figure(figsize=(10, 6))
     ip_url_counts.plot(kind='bar')
     plt.title('Number of Unique URLs Requested per IP Address')
@@ -121,38 +121,38 @@ def visualize_unique_urls_per_ip(df):
     plt.tight_layout()
     plt.show()
 
-def visualize_status_code_distribution(df):
+def visualize_status_code_distribution(data):
     """
     Visualizes the distribution of status codes in the log data.
     """
-    sns.countplot(x="status", data=df)
+    sns.countplot(x="status", data=data)
     plt.title("Distribution of Status Codes")
     plt.show()
 
-def visualize_http_method_distribution(df):
+def visualize_http_method_distribution(data):
     """
     Visualizes the distribution of HTTP methods in the log data.
     """
-    sns.countplot(x="method", data=df)
+    sns.countplot(x="method", data=data)
     plt.title("Distribution of HTTP Methods")
     plt.show()
 
-def visualize_requests_per_hour(df):
+def visualize_requests_per_hour(data):
     """
     Visualizes the number of requests per hour.
     """
-    df['timestamp'] = pd.to_datetime(df['timestamp'], format='%d/%b/%Y:%H:%M:%S %z')
-    df['hour'] = df['timestamp'].dt.hour
-    sns.countplot(x="hour", data=df)
+    data['timestamp'] = pd.to_datetime(data['timestamp'], format='%d/%b/%Y:%H:%M:%S %z')
+    data['hour'] = data['timestamp'].dt.hour
+    sns.countplot(x="hour", data=data)
     plt.title("Number of Requests per Hour")
     plt.show()
 
-def visualize_transferred_bytes_by_status(df):
+def visualize_transferred_bytes_by_status(data):
     """
     Visualizes the sum of transferred bytes by status code.
     """
-    df['size'] = pd.to_numeric(df['size'], errors='coerce')
-    status_wise_sum = df.groupby('status')['size'].sum() / (1024**2)  # in MB
+    data['size'] = pd.to_numeric(data['size'], errors='coerce')
+    status_wise_sum = data.groupby('status')['size'].sum() / (1024**2)  # in MB
     sns.barplot(x=status_wise_sum.index, y=status_wise_sum.values)
     plt.xlabel("Status Code")
     plt.ylabel("Sum of Transferred Bytes (MB)")
